@@ -2,123 +2,36 @@
 
 ## Problem Statement
 
-**Goal:** Build a reproducible Vision Transformer (ViT) training pipeline for CIFAR-10, optimizing **wall-clock time to reach 94% test accuracy**.  
+The aim of this project is to develop a fully reproducible training pipeline for a Vision Transformer (ViT) applied to the CIFAR-10 dataset. Our primary goal is to minimize the wall-clock time required for the model to achieve a target test accuracy of 94%. Efficient training pipelines are essential for research and experimentation, as they allow rapid testing of different model architectures, hyperparameters, and optimization strategies. CIFAR-10 is a widely used benchmark dataset consisting of 50,000 training images and 10,000 test images across 10 classes, providing a controlled environment for evaluating both pre-trained and scratch ViT models.  
 
-**Optimization Target:** Minimize **time-to-target accuracy** while monitoring throughput (images/sec) and GPU memory usage.  
-
-**Motivation:** Efficient training pipelines allow us to explore model modifications quickly, enabling faster iteration and benchmarking for future research. CIFAR-10 is a standard benchmark dataset that provides a controlled environment for testing both pre-trained and scratch ViT models.  
-
-**Success Metrics:**  
-- **Primary:** Time (seconds) to reach 94% test accuracy  
-- **Secondary:** Training/test accuracy curves, throughput (images/sec), peak GPU memory  
-
-**Constraints:**  
-- Runs must be reproducible (fixed random seed)  
-- Resource-limited (GPU memory, batch size)  
-- Pre-trained ViT requires image resizing and normalization  
-
-**Data Requirements:** CIFAR-10 dataset (50k train / 10k test, 32×32 RGB, 10 classes). For pre-trained ViT, images are resized to 224×224 and normalized using ImageNet statistics.  
-
-**Potential Risks:**  
-- Target accuracy may not be reached due to limited epochs or suboptimal hyperparameters  
-- Hardware constraints (GPU memory) could limit batch size  
-- Deterministic settings may slow training or affect throughput  
+We measure success primarily by the time it takes to reach 94% accuracy. Secondary considerations include throughput in images per second, peak GPU memory usage, and the stability of training and validation accuracy over time. Key constraints include reproducibility, ensured by fixing a random seed, and hardware limitations that affect batch size and model configuration. Pre-trained models require additional preprocessing such as resizing images to 224×224 pixels and normalizing them using ImageNet statistics. Potential challenges include failing to reach the target accuracy within the capped number of epochs, slowdowns caused by deterministic training modes, and limitations in GPU memory or compute resources. Addressing these challenges while maintaining reproducibility is crucial for meaningful benchmarking and for subsequent experiments in model optimization.
 
 ---
 
 ## Technical Approach
 
-**Mathematical Formulation:**  
+The optimization problem is formulated as minimizing the cross-entropy loss over the training dataset:
 
 \[
 \mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{c=1}^{C} y_{i,c} \log \hat{p}_{i,c}
-\]  
+\]
 
-- \(y_{i,c}\): one-hot labels  
-- \(\hat{p}_{i,c}\): predicted softmax probability for class \(c\)  
-- Objective: minimize cross-entropy loss while achieving target test accuracy  
+where \(y_{i,c}\) is the one-hot encoded label for sample \(i\) and class \(c\), and \(\hat{p}_{i,c}\) is the predicted probability. The objective is to train the ViT model efficiently while ensuring that the final test accuracy meets or exceeds the target. We use either a pre-trained ViT model on ImageNet or a scratch ViT trained solely on CIFAR-10. Pre-trained models converge faster and provide a strong initialization, while scratch models allow detailed experimentation with architecture parameters.  
 
-**Algorithm Choice:**  
-- Vision Transformer (ViT), either pre-trained on ImageNet or trained from scratch  
-- Pre-trained model provides faster convergence; scratch model allows ablation studies  
-- Transformer architecture chosen for ability to process image patches and model global relationships  
-
-**PyTorch Implementation Strategy:**  
-- Use modular code in `src/` for model and utilities  
-- Notebook `notebooks/week4_implementation.ipynb` handles data loading, training, validation, and plotting  
-- Data loaders implement augmentation and resizing  
-- Early stopping triggered upon reaching 94% accuracy  
-- Training loop logs throughput, peak GPU memory, and epoch accuracy  
-
-**Validation Methods:**  
-- Test output shapes and loss finiteness  
-- Reproducibility verified via fixed seed  
-- Accuracy curves plotted to monitor performance  
-- Peak GPU memory recorded per epoch  
-
-**Resource Requirements:**  
-- GPU recommended (MPS or CUDA supported)  
-- Moderate memory footprint (batch sizes 64–128 depending on model)  
-- Wall-clock time monitored for optimization  
+Our PyTorch implementation follows a modular design. The `src/` folder contains model definitions and utility functions, while the `notebooks/week4_implementation.ipynb` handles data loading, training, validation, and plotting. The CIFAR-10 data loader applies standard augmentations such as random cropping and horizontal flips, and resizing with ImageNet normalization for pre-trained models. The training loop incorporates early stopping to halt training once the target accuracy is reached, logging throughput, peak GPU memory, and epoch-wise performance metrics. Validation methods include checking output shapes, ensuring finite loss values, and verifying reproducibility under a fixed random seed. Resource requirements include GPU acceleration and batch sizes of 64–128 depending on the model choice. This approach provides a clear framework for systematic benchmarking and for future modifications to improve efficiency or accuracy.
 
 ---
 
 ## Initial Results
 
-**Evidence of Implementation Success:**  
-- Notebook successfully runs a forward pass on a sample batch  
-- Model outputs match expected shapes `(B, 10)`  
+The implementation has been successfully executed, with preliminary results confirming that the pipeline functions as intended. A forward pass through the pre-trained ViT demonstrates that output shapes are correct, producing a tensor of size `(batch_size, 10)` for CIFAR-10. The pre-trained model contains approximately 5.5 million parameters, and the training loop correctly logs throughput, peak GPU memory, and epoch-wise accuracy metrics. Reproducibility has been verified by repeating runs with the same random seed, yielding consistent results.  
 
-**Performance Metrics:**  
-- Pre-trained ViT: ~5.5M parameters  
-- Batch size: 64  
-- Time-to-target: recorded in training logs  
-- Throughput: tracked per epoch  
-- Peak GPU memory usage: logged  
-
-**Test Case Results:**  
-- Output shape: `(batch_size, 10)`  
-- Loss: finite and stable  
-- Training reproducible across runs  
-
-**Current Limitations:**  
-- 10–20 epochs may not reach 94% accuracy  
-- Deterministic mode slows training  
-- Augmentations are basic (RandomCrop, HorizontalFlip); more advanced methods could improve performance  
-
-**Resource Usage:**  
-- Moderate GPU memory  
-- Wall-clock training time depends on pre-trained vs scratch  
-
-**Unexpected Challenges:**  
-- Early stopping integration and metric logging  
-- Pre-trained model resizing and normalization  
+Basic test cases validate the implementation, confirming that outputs have the expected shape and that the loss is finite. Performance metrics from initial runs include batch throughput, wall-clock time to reach accuracy milestones, and GPU memory usage. Current limitations include the potential failure to reach the 94% accuracy target within the capped number of epochs, the simplicity of the augmentation strategy, and slowdown caused by deterministic settings. Despite these limitations, the pipeline is functional and provides reliable metrics that can guide further optimization and experimentation. These initial results form the foundation for iterative improvements and benchmarking of alternative approaches.
 
 ---
 
 ## Next Steps
 
-**Immediate Improvements:**  
-- Implement full early stopping to capture exact time-to-target  
-- Tune hyperparameters to reach 94% accuracy consistently  
-- Add more advanced augmentations (Mixup, RandAugment)  
+Immediate improvements involve implementing full early stopping to accurately capture the exact wall-clock time to reach the target accuracy and performing hyperparameter tuning to ensure the model consistently achieves 94% accuracy. Additional enhancements include experimenting with more advanced data augmentations such as Mixup or RandAugment, which could improve generalization and convergence speed. Mixed precision training (AMP) will be explored to reduce memory usage and training time.  
 
-**Technical Challenges to Address:**  
-- Optimizing memory and throughput for larger batch sizes  
-- Integrating configuration files (YAML/JSON) for mod experiments  
-- Mixed precision training (AMP) to reduce wall-clock time  
-
-**Questions:**  
-- Optimal patch size and depth for CIFAR-10  
-- Best augmentation strategy for faster convergence  
-
-**Alternative Approaches:**  
-- Experiment with smaller ViT variants for speed  
-- Compare scratch vs pre-trained performance  
-- Use learning rate schedulers or adaptive optimizers  
-
-**Key Learnings:**  
-- Modular repo structure simplifies experimentation  
-- Pre-trained models drastically reduce time-to-target  
-- Accurate resource logging is crucial for reproducible benchmarking  
-
+Technical challenges to address include optimizing throughput and memory for larger batch sizes, integrating structured configuration files (YAML/JSON) to streamline experimentation, and exploring alternative ViT variants for speed and efficiency. Questions remain regarding the optimal patch size and depth for CIFAR-10, as well as the best augmentation strategies for faster convergence. Alternative approaches under consideration include comparing scratch versus pre-trained ViTs, implementing learning rate schedulers, and testing smaller or more efficient model architectures. Through this project, we have learned the importance of a modular repository structure, the effectiveness of pre-trained models in reducing training time, and the value of detailed resource monitoring for reproducible and meaningful benchmarking.
