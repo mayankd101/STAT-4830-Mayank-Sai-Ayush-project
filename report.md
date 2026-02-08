@@ -10,13 +10,20 @@ We measure success primarily by the time it takes to reach 94% accuracy. Seconda
 
 ## Technical Approach
 
-The cross-entropy loss is defined as:
+Our objective is to optimize the wall-clock **time to reach 94% test accuracy** on the CIFAR-10 dataset using a Vision Transformer (ViT) model. Formally, we minimize the cross-entropy loss over the training set:
 
-L = -(1/N) * sum over i=1..N, sum over c=1..C of y_{i,c} * log(p_hat_{i,c})
+$$
+\mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{c=1}^{C} y_{i,c} \log \hat{p}_{i,c}
+$$
 
-where y_{i,c} is the one-hot label for sample i and class c, and p_hat_{i,c} is the predicted probability. The objective is to train the ViT model efficiently while ensuring that the final test accuracy meets or exceeds the target. We use either a pre-trained ViT model on ImageNet or a scratch ViT trained solely on CIFAR-10. Pre-trained models converge faster and provide a strong initialization, while scratch models allow detailed experimentation with architecture parameters.  
+where \(y_{i,c}\) is the one-hot label for sample \(i\) and class \(c\), and \(\hat{p}_{i,c}\) is the predicted probability from the model. The problem is constrained by reproducibility requirements, limited GPU memory, and the CIFAR-10 image size (32×32 for scratch, 224×224 for pre-trained).
 
-Our PyTorch implementation follows a modular design. The `src/` folder contains model definitions and utility functions, while the `notebooks/week4_implementation.ipynb` handles data loading, training, validation, and plotting. The CIFAR-10 data loader applies standard augmentations such as random cropping and horizontal flips, and resizing with ImageNet normalization for pre-trained models. The training loop incorporates early stopping to halt training once the target accuracy is reached, logging throughput, peak GPU memory, and epoch-wise performance metrics. Validation methods include checking output shapes, ensuring finite loss values, and verifying reproducibility under a fixed random seed. Resource requirements include GPU acceleration and batch sizes of 64–128 depending on the model choice. This approach provides a clear framework for systematic benchmarking and for future modifications to improve efficiency or accuracy.
+We employ a **Vision Transformer** because of its ability to capture global context through self-attention, which can improve convergence speed. For pre-trained experiments, we fine-tune ImageNet weights, replacing the classification head to accommodate the 10 CIFAR-10 classes. For training from scratch, we construct a ViT with 4 layers, 4 attention heads, and embedding dimension 96.
+
+The PyTorch implementation strategy involves modular code: `model.py` for the ViT architecture, `utils.py` for data loading, training, evaluation, and device management. We use `train` and `validate` functions with early stopping when 94% accuracy is reached. To ensure reproducibility, we fix random seeds and log both throughput and peak GPU memory.
+
+Validation is performed by checking the model output shapes, confirming finite loss values, and plotting train/test accuracy curves over epochs. Resource monitoring includes peak GPU memory usage and training throughput per batch. These measures allow us to track efficiency improvements systematically and ensure all modifications are reproducible.
+
 
 ---
 
@@ -33,4 +40,5 @@ Basic test cases validate the implementation, confirming that outputs have the e
 Immediate improvements involve implementing full early stopping to accurately capture the exact wall-clock time to reach the target accuracy and performing hyperparameter tuning to ensure the model consistently achieves 94% accuracy. Additional enhancements include experimenting with more advanced data augmentations such as Mixup or RandAugment, which could improve generalization and convergence speed. Mixed precision training (AMP) will be explored to reduce memory usage and training time.  
 
 Technical challenges to address include optimizing throughput and memory for larger batch sizes, integrating structured configuration files (YAML/JSON) to streamline experimentation, and exploring alternative ViT variants for speed and efficiency. Questions remain regarding the optimal patch size and depth for CIFAR-10, as well as the best augmentation strategies for faster convergence. Alternative approaches under consideration include comparing scratch versus pre-trained ViTs, implementing learning rate schedulers, and testing smaller or more efficient model architectures. Through this project, we have learned the importance of a modular repository structure, the effectiveness of pre-trained models in reducing training time, and the value of detailed resource monitoring for reproducible and meaningful benchmarking.
+
 
