@@ -19,6 +19,7 @@ from src.utils import (
     get_cifar10_loaders,
     get_model,
     train_one_epoch,
+    train,
     validate,
     get_peak_gpu_memory_mb,
 )
@@ -94,6 +95,52 @@ def test_validate(model, device):
 
     assert loss > 0
     assert 0 <= acc <= 100
+
+
+def test_set_seed_deterministic_false():
+    """set_seed with deterministic=False does not raise."""
+    set_seed(42, deterministic=False)
+
+
+def test_get_cifar10_loaders_with_randaugment():
+    """DataLoader works with use_randaugment=True."""
+    set_seed(42)
+    train_loader, test_loader = get_cifar10_loaders(
+        data_dir="./data",
+        batch_size=32,
+        num_workers=0,
+        augment_train=True,
+        use_randaugment=True,
+    )
+    batch, _ = next(iter(train_loader))
+    assert batch.shape[0] == 32
+    assert batch.shape[1] == 3
+
+
+def test_train_with_amp_and_scheduler(model, device):
+    """train() runs with use_amp and use_scheduler (2 epochs)."""
+    set_seed(42)
+    train_loader, test_loader = get_cifar10_loaders(
+        data_dir="./data",
+        batch_size=32,
+        num_workers=0,
+        augment_train=True,
+    )
+    model = model.to(device)
+    results = train(
+        model,
+        train_loader,
+        test_loader,
+        num_epochs=2,
+        lr=3e-4,
+        device=device,
+        log_every=2,
+        target_accuracy=None,
+        use_amp=True,
+        use_scheduler=True,
+    )
+    assert "history" in results
+    assert len(results["history"]["test_acc"]) == 2
 
 
 def test_deterministic_with_seed(model, device):

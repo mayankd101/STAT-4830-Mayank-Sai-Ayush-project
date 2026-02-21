@@ -5,6 +5,7 @@ Includes: data loading, training loop, validation, logging, metrics,
 and reproducibility helpers.
 """
 
+import math
 import time
 import random
 import logging
@@ -29,15 +30,21 @@ def get_device() -> torch.device:
     return torch.device("cpu")
 
 
-def set_seed(seed: int = 42) -> None:
-    """Set random seeds for reproducibility."""
+def set_seed(seed: int = 42, deterministic: bool = True) -> None:
+    """Set random seeds for reproducibility.
+
+    Args:
+        seed: Random seed for Python, NumPy, and PyTorch.
+        deterministic: If True, use deterministic cuDNN (reproducible but slower).
+            If False, use cudnn.benchmark=True for faster training (non-deterministic).
+    """
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = deterministic
+        torch.backends.cudnn.benchmark = not deterministic
 
 
 def get_cifar10_loaders(
@@ -46,6 +53,11 @@ def get_cifar10_loaders(
     num_workers: int = 4,
     augment_train: bool = True,
     img_size: int = 32,
+    use_randaugment: bool = False,
+    randaugment_num_ops: int = 2,
+    randaugment_magnitude: int = 9,
+    persistent_workers: bool = False,
+    prefetch_factor: int = 2,
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Create CIFAR-10 train and test dataloaders.
@@ -56,6 +68,11 @@ def get_cifar10_loaders(
         num_workers: DataLoader workers
         augment_train: Whether to use augmentations for training
         img_size: Output image size (32 for native CIFAR, 224 for timm ViT)
+        use_randaugment: Use RandAugment (stronger augmentation)
+        randaugment_num_ops: RandAugment number of ops (default 2)
+        randaugment_magnitude: RandAugment magnitude (default 9)
+        persistent_workers: Keep workers alive between epochs (faster)
+        prefetch_factor: Batches to prefetch per worker
 
     Returns:
         (train_loader, test_loader)
@@ -76,15 +93,16 @@ def get_cifar10_loaders(
     resize = transforms.Resize((img_size, img_size))
 
     if augment_train:
-        train_transform = transforms.Compose(
-            [
-                transforms.RandomCrop(32, padding=4),
-                transforms.RandomHorizontalFlip(),
-                resize,
-                transforms.ToTensor(),
-                normalize,
-            ]
-        )
+        transform_list = [
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+        ]
+        if use_randaugment:
+            transform_list.append(
+                transforms.RandAugment(num_ops=randaugment_num_ops, magnitude=randaugment_magnitude)
+            )
+        transform_list.extend([resize, transforms.ToTensor(), normalize])
+        train_transform = transforms.Compose(transform_list)
     else:
         train_transform = transforms.Compose(
             [
@@ -111,19 +129,27 @@ def get_cifar10_loaders(
 
     # pin_memory speeds up CPU->GPU transfer but MPS doesn't support it
     pin_memory = torch.cuda.is_available()
+    # persistent_workers requires num_workers > 0
+    use_persistent = persistent_workers and num_workers > 0
+
+    loader_kwargs: Dict[str, Any] = dict(
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        persistent_workers=use_persistent,
+    )
+    if num_workers > 0:
+        loader_kwargs["prefetch_factor"] = prefetch_factor
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
+        **loader_kwargs,
     )
     test_loader = DataLoader(
         test_dataset,
-        batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
+        **loader_kwargs,
     )
 
     return train_loader, test_loader
@@ -178,24 +204,39 @@ def train_one_epoch(
     optimizer: torch.optim.Optimizer,
     device: torch.device,
     epoch: int,
+    use_amp: bool = False,
+    scaler: Optional[Any] = None,
 ) -> Tuple[float, float, float]:
     """
     Train for one epoch. Returns (avg_loss, accuracy, images_per_sec).
+
+    Args:
+        use_amp: Use automatic mixed precision (FP16). Only effective on CUDA.
+        scaler: GradScaler for AMP. Required when use_amp=True on CUDA.
     """
     model.train()
     total_loss = 0.0
     correct = 0
     total = 0
     start_time = time.perf_counter()
+    amp_enabled = use_amp and device.type == "cuda"
 
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
 
-        optimizer.zero_grad()
-        output = model(data)
-        loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        if amp_enabled and scaler is not None:
+            with torch.amp.autocast(device_type="cuda"):
+                output = model(data)
+                loss = criterion(output, target)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            output = model(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
 
         total_loss += loss.item()
         pred = output.argmax(dim=1)
@@ -269,6 +310,9 @@ def train(
     device: Optional[torch.device] = None,
     log_every: int = 1,
     target_accuracy: Optional[float] = 94.0,
+    use_amp: bool = True,
+    use_scheduler: bool = True,
+    warmup_epochs: int = 3,
 ) -> Dict[str, Any]:
     """
     Full training loop with optional early stopping at target accuracy.
@@ -276,6 +320,9 @@ def train(
     Args:
         target_accuracy: If set, stop when test accuracy >= this value.
             Primary metric is time_to_target (wall-clock seconds to reach it).
+        use_amp: Use automatic mixed precision (FP16) on CUDA for faster training.
+        use_scheduler: Use cosine annealing LR scheduler with optional warmup.
+        warmup_epochs: Linear warmup epochs before cosine decay (only if use_scheduler).
 
     Returns:
         Dictionary with 'history', 'best_acc', 'total_time', 'time_to_target' (sec to hit 94%, or None).
@@ -286,6 +333,24 @@ def train(
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
+
+    use_amp_actual = use_amp and device.type == "cuda"
+    scaler = torch.amp.GradScaler("cuda") if use_amp_actual else None
+
+    if use_scheduler:
+        if warmup_epochs > 0:
+            def lr_lambda(epoch_idx: int) -> float:
+                if epoch_idx < warmup_epochs:
+                    return (epoch_idx + 1) / warmup_epochs
+                progress = (epoch_idx - warmup_epochs) / max(1, num_epochs - warmup_epochs)
+                return 0.5 * (1 + math.cos(math.pi * progress))
+            scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+        else:
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer, T_max=num_epochs, eta_min=lr * 0.01
+            )
+    else:
+        scheduler = None
 
     history = {
         "train_loss": [],
@@ -302,10 +367,14 @@ def train(
     for epoch in range(1, num_epochs + 1):
         epoch_start = time.perf_counter()
         train_loss, train_acc, throughput = train_one_epoch(
-            model, train_loader, criterion, optimizer, device, epoch
+            model, train_loader, criterion, optimizer, device, epoch,
+            use_amp=use_amp_actual, scaler=scaler,
         )
         test_loss, test_acc = validate(model, test_loader, criterion, device)
         epoch_time = time.perf_counter() - epoch_start
+
+        if scheduler is not None:
+            scheduler.step()
 
         history["train_loss"].append(train_loss)
         history["train_acc"].append(train_acc)
