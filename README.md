@@ -15,7 +15,7 @@ This creates a `.venv`, installs PyTorch and dependencies, and registers a Jupyt
 
 ## Running the notebook
 
-1. Open `notebooks/week4_implementation.ipynb`
+1. Open `notebooks/week6_implementation.ipynb`
 2. Click the kernel selector (top-right)
 3. Choose **"STAT4830 ViT (Python 3)"** (after running setup)  
    Or choose **".venv (Python)"** / the interpreter at `STAT4830/.venv/bin/python`
