@@ -98,3 +98,7 @@ Combining multiple optimizations without baseline comparisons obscured individua
 
 Next Steps:  
 Run baseline and optimized configurations under controlled settings and compare time-to-target, throughput, and memory usage.
+
+---
+
+Note: This summary was [written by us | helped by ChatGPT | verified by Claude ] 
