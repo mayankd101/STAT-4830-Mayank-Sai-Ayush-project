@@ -1,6 +1,6 @@
 # Self-Critique: Week 4 ViT Training Pipeline
 
-## OBSERVE
+## OBSERVE 
 
 After re-reading the report and re-running the notebook, the training pipeline is functional and reproducible. The use of a pre-trained Vision Transformer allows the model to reach high accuracy in significantly fewer epochs, and logging for accuracy, throughput, and memory usage is consistent across runs. The training behavior is consistent with expectations, with decreasing loss and correctly shaped outputs for CIFAR-10 classification. However, early stopping is only partially implemented, augmentation strategies are limited, and several architectural and training hyperparameters remain unexplored.
 
