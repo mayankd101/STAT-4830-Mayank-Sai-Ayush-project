@@ -1,4 +1,4 @@
-# Vision Transformer Wall-Clock Optimization for CIFAR-10
+# Week 8: Vision Transformer Wall-Clock Optimization for CIFAR-10
 
 ## Problem Statement
 
