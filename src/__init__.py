@@ -1,5 +1,4 @@
 """ViT training pipeline for CIFAR-10."""
-
 from .model import VisionTransformer, count_parameters
 from .utils import (
     get_device,
@@ -12,6 +11,12 @@ from .utils import (
     train,
     get_gpu_memory_mb,
     get_peak_gpu_memory_mb,
+)
+from .losses import (
+    loss_ce,
+    loss_vanilla_kd,
+    loss_dkd,
+    loss_dkd_plus_feature,
 )
 
 __all__ = [
@@ -27,4 +32,8 @@ __all__ = [
     "train",
     "get_gpu_memory_mb",
     "get_peak_gpu_memory_mb",
+    "loss_ce",
+    "loss_vanilla_kd",
+    "loss_dkd",
+    "loss_dkd_plus_feature",
 ]
