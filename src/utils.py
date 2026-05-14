@@ -331,6 +331,8 @@ def train(
         device = get_device()
 
     model = model.to(device)
+    if device.type == "cuda":
+        model = torch.compile(model)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
 
