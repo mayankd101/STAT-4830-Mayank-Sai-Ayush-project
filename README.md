@@ -217,6 +217,7 @@ old_slides_drafts/                   Old slide drafts from weeks 4-12
 demo.ipynb            Executable demo
 
 final_report.md       Final report file
+final_slides.pdf      Final presentation slides file
 
 tests/test_basic.py   Smoke tests for model and utilities.
 requirements.txt      Top-level pinned dependencies.
