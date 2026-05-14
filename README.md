@@ -17,6 +17,8 @@ All four runs train the **same ViT student** (patch 4, embed 192, depth 6, heads
 
 Teacher = `chenyaofo/pytorch-cifar-models/cifar10_resnet56`, loaded via `torch.hub` and **frozen**.
 
+Colab Demo Link: https://colab.research.google.com/github/mayankd101/STAT-4830-Mayank-Sai-Ayush-project/blob/exploration/demo.ipynb
+
 ---
 
 ## 1. Setup
