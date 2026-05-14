@@ -4,7 +4,7 @@ Vision Transformer (ViT) for CIFAR-10 classification.
 A minimal, modded-nanoGPT-style implementation focused on training efficiency
 and reproducibility. Designed for CIFAR-10 (32x32 images) with configurable
 patch size, depth, embedding dimension, and attention heads.
-"""
+""" 
 
 import math
 import torch
