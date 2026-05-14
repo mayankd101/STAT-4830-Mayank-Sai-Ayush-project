@@ -413,7 +413,7 @@ Representative results included:
 | Metric          | Baseline   | Optimized  |
 | --------------- | ---------- | ---------- |
 | Best Accuracy   | 94.1%      | 94.2%      |
-| Time-to-Target  | 804s       | 668s       |
+| Time-to-Target  | 804s       | 637s       |
 | Throughput      | 2850 img/s | 3450 img/s |
 | Peak GPU Memory | 4.2 GB     | 3.1 GB     |
 
@@ -463,6 +463,8 @@ This motivated the transition toward knowledge distillation.
 <p align="center">
 <img width="383" height="234" alt="image" src="https://github.com/user-attachments/assets/8281c849-415f-42de-8d14-4f5f031cc4dc" />
 </p>
+
+Baseline: reached 85.0% in 476.7s
 
 ---
 
@@ -535,6 +537,8 @@ This motivated the investigation of more advanced distillation methods.
 <p align="center">
 <img width="371" height="258" alt="image" src="https://github.com/user-attachments/assets/fdcf9ac0-1af8-4d2c-8df3-16b51b9edf7a" />
 </p>
+
+KD reached 85.0% test accuracy in 493.6s
 ---
 
 
@@ -719,6 +723,7 @@ The project concluded that dark knowledge among incorrect classes provides a str
   <img width="370" height="237" alt="image" src="https://github.com/user-attachments/assets/66c7876b-3cb2-4e39-a3ed-45283d2dfe9f" />
 </p>
 
+DKD reached 85.0% test accuracy in 337.81s
 
 ---
 
@@ -847,6 +852,8 @@ The project concluded that feature-level supervision improves optimization effic
 <p align="center">
 <img width="278" height="196" alt="image" src="https://github.com/user-attachments/assets/05376ee8-0151-49cd-bab2-42ea9fdfca96" />
 </p>
+
+Feature-Distillation: reached 85.0% in 310.76s 
   
 ---
 
