@@ -4,6 +4,8 @@ A reproducible CIFAR-10 Vision Transformer training harness whose **primary metr
 
 > **Open benchmark.** This repository is also the reference implementation for an open *Fast ViT on CIFAR-10* benchmark with two tracks (no-distillation and distillation). The full ruleset — fixed hardware, dataset, eval protocol, time accounting, submission schema, and verification — lives in [`BENCHMARK.md`](BENCHMARK.md). The four runs in the "Reported benchmark" section below are the canonical reference numbers for both tracks.
 
+Colab Demo Link: https://colab.research.google.com/github/mayankd101/STAT-4830-Mayank-Sai-Ayush-project/blob/exploration/demo.ipynb
+
 ## Reported benchmark
 
 All four runs train the **same ViT student** (patch 4, embed 192, depth 6, heads 6) on CIFAR-10 with the **same** data loader, augmentations, batch size, LR schedule, validation cadence, and **target = 85% test accuracy**. The only thing that changes is the **loss**.
@@ -17,7 +19,6 @@ All four runs train the **same ViT student** (patch 4, embed 192, depth 6, heads
 
 Teacher = `chenyaofo/pytorch-cifar-models/cifar10_resnet56`, loaded via `torch.hub` and **frozen**.
 
-Colab Demo Link: https://colab.research.google.com/github/mayankd101/STAT-4830-Mayank-Sai-Ayush-project/blob/exploration/demo.ipynb
 
 ---
 
