@@ -539,6 +539,7 @@ This motivated the investigation of more advanced distillation methods.
 </p>
 
 KD reached 85.0% test accuracy in 493.6s
+
 ---
 
 
@@ -883,13 +884,13 @@ The primary metric throughout the project was wall-clock time required to reach 
 ## 9.2 Overall Comparison
 
 
-| Method               | Time-to-Target       | Key Insight                |
-| -------------------- | -------------------- | -------------------------- |
-| Baseline ViT         | Slow convergence     | No optimization            |
-| Systems Optimization | Faster throughput    | Better per-step efficiency |
-| Vanilla KD           | Smoother convergence | Teacher soft labels        |
-| DKD                  | Major improvement    | Better optimization signal |
-| Feature + DKD        | Best overall         | Representation supervision |
+| Method               | Time-to-Target                 | Key Insight                |
+| -------------------- | ------------------------------ | -------------------------- |
+| Baseline ViT         | 804s (Slow convergence)        | No optimization            |
+| Systems Optimization | 476.7s (Faster throughput)     | Better per-step efficiency |
+| Vanilla KD           | 493.6s (Smoother convergence)  | Teacher soft labels        |
+| DKD                  | 337.81s (Major improvement)    | Better optimization signal |
+| Feature + DKD        | 310.76s (Best overall)         | Representation supervision |
 
 
 ---
