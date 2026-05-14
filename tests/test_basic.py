@@ -23,6 +23,7 @@ from src.utils import (
     validate,
     get_peak_gpu_memory_mb,
 )
+from src.losses import loss_ce, loss_vanilla_kd, loss_dkd, loss_dkd_plus_feature
 
 
 @pytest.fixture
@@ -158,6 +159,52 @@ def test_deterministic_with_seed(model, device):
         out2 = m2(x)
 
     torch.testing.assert_close(out1, out2)
+
+
+def test_loss_ce(model, device):
+    """CE loss returns positive scalar."""
+    model = model.to(device)
+    x = torch.randn(4, 3, 32, 32, device=device)
+    y = torch.randint(0, 10, (4,), device=device)
+    logits = model(x)
+    loss = loss_ce(logits, y)
+    assert loss.item() > 0
+
+
+def test_loss_vanilla_kd(model, device):
+    """Vanilla KD loss returns positive scalar."""
+    model = model.to(device)
+    x = torch.randn(4, 3, 32, 32, device=device)
+    y = torch.randint(0, 10, (4,), device=device)
+    zs = model(x)
+    zt = torch.randn_like(zs)
+    loss = loss_vanilla_kd(zs, zt, y)
+    assert loss.item() > 0
+
+
+def test_loss_dkd(model, device):
+    """DKD loss returns positive scalar."""
+    model = model.to(device)
+    x = torch.randn(4, 3, 32, 32, device=device)
+    y = torch.randint(0, 10, (4,), device=device)
+    zs = model(x)
+    zt = torch.randn_like(zs)
+    loss = loss_dkd(zs, zt, y)
+    assert loss.item() > 0
+
+
+def test_loss_dkd_plus_feature(model, device):
+    """DKD + feature loss returns positive scalar."""
+    model = model.to(device)
+    x = torch.randn(4, 3, 32, 32, device=device)
+    y = torch.randint(0, 10, (4,), device=device)
+    zs = model(x)
+    zt = torch.randn_like(zs)
+    s_feat = torch.randn(4, 192, device=device)
+    t_feat = torch.randn(4, 64, device=device)
+    proj = torch.nn.Linear(192, 64, bias=False).to(device)
+    loss = loss_dkd_plus_feature(zs, zt, y, s_feat, t_feat, proj)
+    assert loss.item() > 0
 
 
 if __name__ == "__main__":
