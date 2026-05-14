@@ -190,9 +190,12 @@ The cell silently skips any method whose JSON is not present, so it is safe to r
 
 ```text
 src/
-  model.py            ViT (patch embed, MHA, MLP, transformer blocks, classifier).
+  model.py            ViT (patch embed, MHA, MLP, transformer blocks, CLS token classifier).
   utils.py            CIFAR-10 loaders, device selection, seeding, train/validate,
-                      AMP helpers, GPU memory metrics, cosine-with-warmup schedule.
+                      AMP helpers, GPU memory metrics, cosine-with-warmup schedule,
+                      torch.compile support.
+  losses.py           Loss functions: CE, Vanilla KD, DKD, DKD + feature distillation.
+
 notebooks/
   no_distillation_baseline.ipynb     Baseline: CE-only ViT (target 85%).
   kd_teacher_comparison.ipynb        Vanilla KD across teacher architectures (target 85%).
@@ -202,9 +205,12 @@ notebooks/
   vit_pipeline_optimization.ipynb    Week 6: wall-clock pipeline tuning.
   vit_advanced_optimizations.ipynb   Week 8: bf16 / compile / Muon / mixup ablations.
   cnn_teacher_distillation.ipynb     Earlier CNN-teacher distillation experiments.
+
 docs/
-  development_log.md, llm_exploration/...       Self-critiques and weekly notes.
-tests/test_basic.py   Smoke tests for the model and utilities.
+  development_log.md                 Self-critiques and weekly notes (Weeks 4–12).
+  llm_exploration/                   LLM-assisted exploration notes.
+
+tests/test_basic.py   Smoke tests for model and utilities.
 requirements.txt      Top-level pinned dependencies.
 setup_env.sh          One-shot venv + dependency + kernel installer.
 ```
