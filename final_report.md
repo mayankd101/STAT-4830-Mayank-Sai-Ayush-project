@@ -964,29 +964,11 @@ Additionally, some experiments prioritized training efficiency over absolute fin
 ## 11.2 Future Work
 
 
-Future directions include:
+One of the primary directions for future work is the development of an open benchmarking framework centered around efficient Vision Transformer training. Based on the results of this project, we plan to extend our experimental setup into a standardized benchmark that evaluates models using time-to-target accuracy rather than only final test accuracy. 
 
+The benchmark is designed specifically for small-scale vision tasks such as CIFAR-10 and emphasizes practical system-level metrics including wall-clock convergence time, hardware efficiency, and reproducibility. In addition to standard student-only training, the benchmark introduces a dedicated distillation track motivated by our findings that knowledge distillation substantially improves convergence efficiency for small Vision Transformers.
 
-* scaling experiments to ImageNet
-* evaluating larger Vision Transformers
-* multi-teacher distillation
-* self-supervised teachers
-* DeiT-style training strategies
-* pretrained initialization methods
-* representation-learning analysis
-* distillation for multimodal transformers
-
-
-Additional work could also investigate:
-
-
-* sparse attention architectures
-* token pruning
-* adaptive computation
-* low-rank attention methods
-
-
-as complementary approaches to reducing transformer training cost.
+The framework defines fixed hardware, dataset, evaluation, and architectural constraints while still allowing flexibility in optimization strategies, augmentation methods, runtime techniques, and distillation objectives. By open-sourcing the benchmark and leaderboard infrastructure, we hope to encourage more reproducible research focused not only on achieving high accuracy, but also on reducing the computational cost required to achieve it. 
 
 
 ---
