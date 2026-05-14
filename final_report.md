@@ -47,7 +47,7 @@ Many existing machine learning benchmarks emphasize final accuracy as the primar
 </p>
 
 
-This project instead focuses on minimizing the wall-clock time required for a Vision Transformer to achieve a target test accuracy threshold on CIFAR-10. The project evolved substantially throughout development. Initial work focused on improving throughput and hardware efficiency through systems-level optimizations such as mixed precision, optimized data loading, learning-rate scheduling, and compiler-level acceleration. While these techniques improved per-step efficiency, they did not sufficiently address convergence inefficiency.
+This project instead focuses on minimizing the wall-clock time required for a Vision Transformer to achieve 85% accuracy on CIFAR-10. The project evolved substantially throughout development. Initial work focused on improving throughput and hardware efficiency through systems-level optimizations such as mixed precision, optimized data loading, learning-rate scheduling, and compiler-level acceleration. While these techniques improved per-step efficiency, they did not sufficiently address convergence inefficiency.
 
 
 This observation motivated a shift toward knowledge distillation and optimization-focused learning strategies. The project ultimately investigated how teacher-guided supervision and representation alignment could improve learning efficiency and reduce time-to-target performance.
@@ -86,7 +86,7 @@ The project focuses on CIFAR-10 image classification. CIFAR-10 contains:
 * RGB images of size 32 × 32
 
 
-The objective is not merely to maximize final test accuracy, but instead to minimize the elapsed wall-clock time required for the model to first achieve a target test accuracy threshold.
+The objective is not merely to maximize final test accuracy, but instead to minimize the elapsed wall-clock time required for the model to first achieve 85%.
 
 
 ---
@@ -407,7 +407,7 @@ Systems-level optimizations successfully improved:
 * per-step training cost
 
 
-Representative results included:
+Representative results with a target accuracy of 94% were:
 
 
 | Metric          | Baseline   | Optimized  |
@@ -427,7 +427,7 @@ This led to the central insight of the project:
 > improving throughput alone does not sufficiently optimize convergence behavior.
 
 
-The project therefore pivoted toward improving learning efficiency directly.
+The project therefore pivoted toward improving learning efficiency directly with a target accuracy of 85%.
 
 
 ---
