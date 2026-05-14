@@ -42,6 +42,9 @@ Vision Transformers (ViTs) have emerged as a powerful architecture for image cla
 
 Many existing machine learning benchmarks emphasize final accuracy as the primary evaluation metric. However, final accuracy alone does not capture the practical efficiency of a model. Two models may achieve similar accuracy while requiring dramatically different amounts of training time and compute resources.
 
+<img width="399" height="197" alt="image" src="https://github.com/user-attachments/assets/90c87949-8bce-46ce-9799-b5adab724f04" />
+
+
 
 This project instead focuses on minimizing the wall-clock time required for a Vision Transformer to achieve a target test accuracy threshold on CIFAR-10. The project evolved substantially throughout development. Initial work focused on improving throughput and hardware efficiency through systems-level optimizations such as mixed precision, optimized data loading, learning-rate scheduling, and compiler-level acceleration. While these techniques improved per-step efficiency, they did not sufficiently address convergence inefficiency.
 
@@ -172,6 +175,10 @@ $$
 As a result, patch count and embedding dimensionality strongly influence computational efficiency.
 
 
+<img width="358" height="186" alt="image" src="https://github.com/user-attachments/assets/84bf53fe-114f-45c8-aee1-92dd0005ad3b" />
+
+
+
 ---
 
 
@@ -295,6 +302,9 @@ This phase introduced multiple systems-level optimizations:
 * cosine learning-rate scheduling
 * warmup scheduling
 * optimized data loading
+
+
+<img width="351" height="236" alt="image" src="https://github.com/user-attachments/assets/5b5ff67d-1bc9-476d-81a7-5d27589c8d71" />
 
 ---
 
@@ -449,6 +459,10 @@ The project hypothesized that teacher-guided supervision could transfer these ad
 This motivated the transition toward knowledge distillation.
 
 
+<img width="383" height="234" alt="image" src="https://github.com/user-attachments/assets/8281c849-415f-42de-8d14-4f5f031cc4dc" />
+
+
+
 ---
 
 
@@ -516,6 +530,9 @@ One limitation of Vanilla KD is that it treats all non-target classes similarly,
 
 
 This motivated the investigation of more advanced distillation methods.
+
+
+<img width="371" height="258" alt="image" src="https://github.com/user-attachments/assets/fdcf9ac0-1af8-4d2c-8df3-16b51b9edf7a" />
 
 
 ---
@@ -698,6 +715,9 @@ Experimental results showed that preserving non-target class relationships was p
 
 The project concluded that dark knowledge among incorrect classes provides a strong optimization signal for transformer training.
 
+<img width="370" height="237" alt="image" src="https://github.com/user-attachments/assets/66c7876b-3cb2-4e39-a3ed-45283d2dfe9f" />
+
+
 
 ---
 
@@ -822,6 +842,7 @@ Feature alignment loss decreased consistently throughout training, indicating su
 
 The project concluded that feature-level supervision improves optimization efficiency more effectively than output-level supervision alone.
 
+<img width="278" height="196" alt="image" src="https://github.com/user-attachments/assets/05376ee8-0151-49cd-bab2-42ea9fdfca96" />
 
 ---
 
