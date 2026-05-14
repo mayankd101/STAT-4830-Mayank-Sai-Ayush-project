@@ -240,4 +240,4 @@ setup_env.sh          One-shot venv + dependency + kernel installer.
 
 This project builds a modded-nanoGPT–style training harness for Vision Transformers. Instead of optimizing only for final accuracy, we optimize for **time-to-target accuracy** — how fast (in wall-clock seconds) a model can reach a specified performance threshold on CIFAR-10.
 
-The headline finding is that **distillation from a pretrained CNN teacher reduces this time** for a small ViT, with **DKD + feature matching** producing the largest improvement over the no-distillation baseline. Earlier weekly notebooks (`week4`–`week8`, `week11`, `week12_cnn`) document the systems-side path that led to this conclusion: data pipeline tuning, AMP / bf16, schedule design, and earlier distillation experiments.
+The headline finding is that **distillation from a pretrained CNN teacher reduces this time** for a small ViT, with **DKD + feature matching** producing the largest improvement over the no-distillation baseline. Earlier notebooks document the systems-side path that led to this conclusion: data pipeline tuning, AMP / bf16, schedule design, and earlier distillation experiments.
