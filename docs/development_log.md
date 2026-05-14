@@ -136,3 +136,87 @@ However, several limitations remain. While the optimized pipeline shows clear pe
 Further progress requires additional GPU compute time for repeated multi-seed experiments and controlled ablation studies. Access to profiling tools such as PyTorch Profiler and CUDA memory tracing utilities will be important for deeper systems-level analysis.
 
 Additional literature review on transformer optimization, compiler-based acceleration, and second-order-inspired optimizers would strengthen the theoretical framing of the work. More structured experiment management through configuration files and reproducible run scripts is also needed to support research-quality reporting and benchmarking.
+
+________________________________________________________________________________________________________________________________________________
+
+# Self-Critique: Week 10 Vanilla Knowledge Distillation
+
+## OBSERVE
+
+After reviewing the Week 10 implementation, the teacher-student distillation framework is functional and integrates correctly with the existing systems-level optimizations. The ResNet-56 teacher is successfully frozen and produces stable soft targets throughout training. The student ViT trains using a weighted combination of cross-entropy and KL divergence losses without introducing numerical instability. Validation curves show smoother convergence compared to baseline training. However, Vanilla KD does not substantially improve time-to-target performance over the optimized baseline, suggesting the distillation objective itself is the limiting factor rather than hardware efficiency.
+
+## ORIENT
+
+### Strengths
+- Teacher-student framework integrates cleanly with existing BF16, AdamW, and cosine scheduling pipeline
+- Smoother validation curves and reduced oscillation compared to baseline ViT
+- Soft targets from ResNet-56 successfully transfer inter-class relationship information
+
+### Areas for Improvement
+- Vanilla KD treats all non-target classes equally, limiting the quality of relational information transferred
+- Time-to-target improvement over optimized baseline is minimal — convergence bottleneck has shifted from hardware to distillation objective structure
+- Temperature and weighting hyperparameters (α, T) have not been systematically tuned
+
+### Critical Risks/Assumptions
+- Results assume ResNet-56 teacher is well-calibrated and its soft targets are informative for CIFAR-10
+- Improvements in convergence smoothness do not necessarily translate into lower time-to-target
+- Single-seed experiments limit confidence in reproducibility of observed gains
+
+## DECIDE
+
+### Concrete Next Actions
+- Implement Decoupled Knowledge Distillation (DKD) to separately control target-class and non-target-class supervision
+- Tune temperature T and weighting α systematically across controlled experiments
+- Measure exact wall-clock improvements from KD variants relative to baseline
+- Analyze whether feature-level supervision can provide stronger optimization signal than logits alone
+
+## ACT
+
+### Resource Needs
+- Additional GPU compute time for systematic hyperparameter sweeps over α and T
+- Reference implementation of DKD from Megvii mdistiller repository for validation
+- Structured logging to track per-epoch convergence speed across distillation configurations
+
+________________________________________________________________________________________________________________________________________________
+
+# Self-Critique: Week 12 Decoupled Knowledge Distillation
+
+## OBSERVE
+
+After reviewing the Week 12 implementation, DKD produces a significant and measurable reduction in wall-clock time to 85% test accuracy relative to both the baseline ViT and Vanilla KD. The separation of target-class and non-target-class supervision objectives improves early-stage convergence speed and optimization stability. Training curves are smoother and reach the target threshold substantially earlier than prior methods. However, DKD introduces increased hyperparameter sensitivity — the balance between α, β, and temperature significantly affects convergence quality and requires careful tuning. Feature-level distillation has not yet been implemented and represents the primary remaining opportunity for improvement.
+
+## ORIENT
+
+### Strengths
+- DKD substantially reduces time-to-target vs Vanilla KD (337.81s vs 493.6s)
+- Separation of TCKD and NCKD gives finer control over learning dynamics
+- Non-target supervision contributes strongly to convergence speed — dark knowledge among incorrect classes is highly informative for the ViT student
+- Smoother optimization behavior and improved stability at higher learning rates
+
+### Areas for Improvement
+- Hyperparameter sensitivity is high — α, β, and temperature all require careful tuning
+- Feature-level supervision not yet implemented — logit-only distillation may leave representation-level signal untapped
+- Ablation studies isolating TCKD vs NCKD contributions have not been completed
+- Multi-seed variance remains unquantified
+
+### Critical Risks/Assumptions
+- DKD gains assume carefully tuned hyperparameters — poorly tuned settings may underperform Vanilla KD
+- Results are specific to ResNet-56 teacher and custom ViT student — generalization to other architectures unverified
+- Single dataset (CIFAR-10) limits conclusions about broader applicability
+
+## DECIDE
+
+### Concrete Next Actions
+- Implement feature-level distillation aligning ResNet-56 penultimate features with ViT CLS token representations
+- Select appropriate layers for feature alignment and introduce learnable projection head
+- Measure additional convergence gains from feature matching vs DKD alone
+- Evaluate computational overhead introduced by feature alignment loss
+- Continue refining α, β, and temperature through systematic sweeps
+
+## ACT
+
+### Resource Needs
+- GPU compute time for feature distillation experiments and hyperparameter sweeps
+- Reference material on feature alignment strategies for cross-architecture distillation
+- Profiling tools to measure computational overhead of combined DKD and feature matching losses
+- Structured experiment tracking to compare all four methods (baseline, Vanilla KD, DKD, Feature + DKD) under identical conditions
