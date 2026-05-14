@@ -210,6 +210,14 @@ docs/
   development_log.md                 Self-critiques and weekly notes (Weeks 4–12).
   llm_exploration/                   LLM-assisted exploration notes.
 
+self_critiques/                      Self-critiques are also here individually
+old_reports/                         Old report drafts from weeks 4-12
+old_slides_drafts/                   Old slide drafts from weeks 4-12
+
+demo.ipynb            Executable demo
+
+final_report.md       Final report file
+
 tests/test_basic.py   Smoke tests for model and utilities.
 requirements.txt      Top-level pinned dependencies.
 setup_env.sh          One-shot venv + dependency + kernel installer.
