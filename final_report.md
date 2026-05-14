@@ -854,11 +854,13 @@ The project concluded that feature-level supervision improves optimization effic
 <img width="278" height="196" alt="image" src="https://github.com/user-attachments/assets/05376ee8-0151-49cd-bab2-42ea9fdfca96" />
 </p>
 
+Feature-Distillation: reached 85.0% in 310.76s 
+
 <p align="center">
 <img width="279" height="193" alt="image" src="https://github.com/user-attachments/assets/106bd53d-b806-4fe0-aa95-1baeaeb21d1b" />
 </p>
 
-Feature-Distillation: reached 85.0% in 310.76s 
+Feature-Distillation loss decreases to 0.12 over 50 epochs
   
 ---
 
