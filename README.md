@@ -4,7 +4,7 @@ A reproducible CIFAR-10 Vision Transformer training harness whose **primary metr
 
 > **Open benchmark.** This repository is also the reference implementation for an open *Fast ViT on CIFAR-10* benchmark with two tracks (no-distillation and distillation). The full ruleset — fixed hardware, dataset, eval protocol, time accounting, submission schema, and verification — lives in [`BENCHMARK.md`](BENCHMARK.md). The four runs in the "Reported benchmark" section below are the canonical reference numbers for both tracks.
 
-Colab Demo Link: https://colab.research.google.com/github/mayankd101/STAT-4830-Mayank-Sai-Ayush-project/blob/exploration/demo.ipynb
+Colab Demo Link: https://colab.research.google.com/github/mayankd101/STAT-4830-Mayank-Sai-Ayush-project/blob/main/demo.ipynb
 
 ## Reported benchmark
 
